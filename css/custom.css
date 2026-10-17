@@ -1,0 +1,14 @@
+/* Keep reading comfortable on narrow screens. */
+#article-container .math-display {
+  overflow-x: auto;
+  overflow-wrap: normal;
+  margin: 1.25em 0;
+}
+@media (max-width: 768px) {
+  #page-header.full_page { height: 260px; }
+  #page-header.full_page #site-info { top: 85px; }
+  #page-header #site-subtitle { font-size: 0.9rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #scroll-down .scroll-down-effects { animation: none; }
+}

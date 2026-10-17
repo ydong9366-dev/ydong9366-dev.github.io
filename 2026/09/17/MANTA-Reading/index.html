@@ -1,0 +1,279 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>MANTA 论文阅读笔记 | Joker丶D的游乐园</title><meta name="author" content="Joker丶D"><meta name="copyright" content="Joker丶D"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="梳理 MANTA 的内外循环、智能体拓扑建立与协作过程，记录关键机制及阅读思考。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MANTA 论文阅读笔记">
+<meta property="og:url" content="https://ydong9366-dev.github.io/2026/09/17/MANTA-Reading/index.html">
+<meta property="og:site_name" content="Joker丶D的游乐园">
+<meta property="og:description" content="梳理 MANTA 的内外循环、智能体拓扑建立与协作过程，记录关键机制及阅读思考。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ydong9366-dev.github.io/img/butterfly-icon.png">
+<meta property="article:published_time" content="2026-09-17T06:13:48.000Z">
+<meta property="article:modified_time" content="2026-10-16T11:44:14.355Z">
+<meta property="article:author" content="Joker丶D">
+<meta property="article:tag" content="MANTA">
+<meta property="article:tag" content="多智能体">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ydong9366-dev.github.io/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "MANTA 论文阅读笔记",
+  "url": "https://ydong9366-dev.github.io/2026/09/17/MANTA-Reading/",
+  "image": "https://ydong9366-dev.github.io/img/butterfly-icon.png",
+  "datePublished": "2026-09-17T06:13:48.000Z",
+  "dateModified": "2026-10-16T11:44:14.355Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Joker丶D",
+      "url": "https://ydong9366-dev.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://ydong9366-dev.github.io/2026/09/17/MANTA-Reading/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css?v=5.7.1.260810"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        try {
+          const data = { value }
+
+          if (ttl != null) {
+            data.expiry = Date.now() + ttl * 86400000
+          }
+
+          localStorage.setItem(key, JSON.stringify(data))
+        } catch (e) {
+          console.error(e)
+        }
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'MANTA 论文阅读笔记',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css"><meta name="generator" content="Hexo 8.1.2"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">5</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">7</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/2026/09/17/About-Me/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg fixed" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Joker丶D的游乐园</span></a><a class="nav-page-title" href="/"><span class="site-name">MANTA 论文阅读笔记</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/2026/09/17/About-Me/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">MANTA 论文阅读笔记</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-09-17T06:13:48.000Z" title="发表于 2026-09-17 14:13:48">2026-09-17</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-16T11:44:14.355Z" title="更新于 2026-10-16 19:44:14">2026-10-16</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/">论文阅读</a></span></div><div class="meta-secondline"></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="0、核心总结"><a href="#0、核心总结" class="headerlink" title="0、核心总结"></a>0、核心总结</h1><p>MANTA核心逻辑：包括内外两次循环</p>
+<p><strong>内循环（每道题）：</strong></p>
+<ol>
+<li><strong>Planner</strong>：读长期文稿，分析任务类型&#x2F;属性&#x2F;失败风险 &#x3D;&gt; 输出紧凑 JSON 计划</li>
+<li><strong>Orchestrator</strong>：展开成完整拓扑 → <strong>校验</strong>（组成员唯一、挂载无环、角色合法、预算内）→ 校验失败则<strong>在任何 AI 被实例化之前拒绝</strong>，退回 fallback</li>
+<li><strong>跑第 1 轮</strong></li>
+<li><strong>Trace Auditor</strong> 扫过程 → 报 flag</li>
+<li><strong>Controller 门控</strong>：<ul>
+<li>智能体协作无异常 → 直接 <strong>Finalizer</strong> 投票出答案</li>
+<li>有 medium&#x2F;high 可修复 flag → <strong>Planner 提一个变异（≤3 op）</strong> → Orchestrator 在<strong>副本</strong>上应用并校验 → <strong>重指向 context controller</strong>（状态零迁移）→ <strong>跑第 2 轮</strong></li>
+</ul>
+</li>
+<li><strong>Finalizer</strong> 在<strong>所有轮次的候选</strong>上投票 → 最终答案</li>
+</ol>
+<p>**外循环（每 12 次运行）：**更新长期PlayBook</p>
+<h1 id="一、这篇论文在解决什么问题？"><a href="#一、这篇论文在解决什么问题？" class="headerlink" title="一、这篇论文在解决什么问题？"></a>一、这篇论文在解决什么问题？</h1><p>**背景：**多智能体协作解决问题变得热门。</p>
+<p><strong>问题：</strong> 多智能体的协作拓扑都是事先设计好、写死的。任务一开始，架构就冻结了，中间发现不合适也无法修改。</p>
+<p>**例子：**两个人各查一半资料。结果跑起来发现，其中一个拼命在工作，另一个却很闲。但架构是死的，只能硬着头皮跑完。</p>
+<p><strong>思路：<strong>能不能让这套「组织架构」在解题过程中</strong>自己动手改</strong>？</p>
+<h1 id="二、MANTA-是怎么做的？"><a href="#二、MANTA-是怎么做的？" class="headerlink" title="二、MANTA 是怎么做的？"></a>二、MANTA 是怎么做的？</h1><h2 id="Step1：组队"><a href="#Step1：组队" class="headerlink" title="Step1：组队"></a>Step1：组队</h2><p>拿到题目后，系统先想：「这题需要几个人？什么结构？要不要一个专门检查的？」</p>
+<p>比如一道需要查很多方向的题，它可能决定：<strong>1 个组长 + 3 个查资料的 + 1 个核对证据的</strong>。</p>
+<h2 id="Step2：跑一轮试试"><a href="#Step2：跑一轮试试" class="headerlink" title="Step2：跑一轮试试"></a>Step2：跑一轮试试</h2><p>按这个架构干一轮活，互相互传消息。消息是<strong>压缩成一句话摘要</strong>传的，不是把整段对话倒给对方。</p>
+<h2 id="Step3：检查过程有没有毛病"><a href="#Step3：检查过程有没有毛病" class="headerlink" title="Step3：检查过程有没有毛病"></a>Step3：检查过程有没有毛病</h2><p>跑完后，有个「监工」专门看<strong>过程</strong>有没有问题。它盯的是这些信号：</p>
+<ul>
+<li>同一个动作被两个人重复做了一遍（比如两个人同时去改同一个文件）</li>
+<li>某个分支卡住了、啥也没产出</li>
+<li>有人收集了资料，但汇总的时候根本没交上去</li>
+<li>大家太快就同意了，但其实心里没底、还有没解决的问题</li>
+<li>该有人验证的地方却没人验证</li>
+</ul>
+<p><strong>特别注意</strong>：这个监工<strong>只判断过程干不干净，不看答案对不对</strong>。</p>
+<h2 id="Step4：最多改一次结构"><a href="#Step4：最多改一次结构" class="headerlink" title="Step4：最多改一次结构"></a>Step4：最多改一次结构</h2><p>如果监工发现毛病，系统<strong>最多改一次</strong>（这是硬规定），而且改动<strong>不超过 3 个小操作</strong>。可以改的东西有：</p>
+<table>
+<thead>
+<tr>
+<th>能改什么</th>
+<th>例子</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>加人 &#x2F; 拆小组</td>
+<td>把那个过载的人变成一个小组的小组长，给他配几个手下</td>
+</tr>
+<tr>
+<td>换拓扑</td>
+<td>从「星形」换成「链式」</td>
+</tr>
+<tr>
+<td>加&#x2F;删联系</td>
+<td>让两个本来不直接说话的智能体直接沟通</td>
+</tr>
+<tr>
+<td>改信息可见性</td>
+<td>让某个智能体能看到全部资料</td>
+</tr>
+</tbody></table>
+<p>改完之后再跑<strong>最后一轮</strong>，出答案。</p>
+<h1 id="三、两个「笔记本」：它是怎么记住经验的？"><a href="#三、两个「笔记本」：它是怎么记住经验的？" class="headerlink" title="三、两个「笔记本」：它是怎么记住经验的？"></a>三、两个「笔记本」：它是怎么记住经验的？</h1><p>这叫 <strong>Playbook（战术手册）</strong>，分两本：</p>
+<p><strong>第一本——这一局用的（短期）</strong> 记着「这一轮用了什么架构、出了什么毛病、改了什么」。作用是<strong>别重复犯错</strong>：同一道题里不会刚改完又改回去。</p>
+<p><strong>第二本——长期积累的（长期）</strong> 跨题、跨领域攒下来的<strong>通用经验</strong>，写成一份 markdown 文档。里面记的是类似这样的话：</p>
+<blockquote>
+<p>「没有工具、纯推理的题，用『投票制』比用单个 AI 好：投票制 35 次全干净，单个 AI 6 次全出毛病。」</p>
+<p>「任务有先后依赖关系（后一步得等前一步），用链式而不是并行，不然大家各看一块、拼不起来。」</p>
+<p>「要改外部状态的动作（写文件、发消息），<strong>必须只有一个人做</strong>，不然会重复执行。」</p>
+</blockquote>
+<p>每 12 次运行，会让 AI 把这份文档<strong>重写一遍</strong>，把新经验加进去、把矛盾的删掉。</p>
+<h1 id="四、最关键的一条规矩：绝对不告诉系统答案对不对"><a href="#四、最关键的一条规矩：绝对不告诉系统答案对不对" class="headerlink" title="四、最关键的一条规矩：绝对不告诉系统答案对不对"></a>四、最关键的一条规矩：绝对不告诉系统答案对不对</h1><p>这是整篇论文最值得称赞的地方。</p>
+<p><strong>系统内部任何组件——组队的、监工的、写笔记本的——都不许知道 benchmark 的正确答案。</strong> 监工只能看到「过程干不干净」，不能看「这答案得分多少」。</p>
+<p><strong>为什么这么做？</strong> 因为如果让它看答案，它学到的就是「什么样的架构在<strong>这道题</strong>上得分高」——那是<strong>背答案</strong>，换个领域就没用了。</p>
+<p><strong>代价</strong>：学习信号变弱了。但好处很大——实验证明，这套经验<strong>能跨领域用</strong>。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://ydong9366-dev.github.io">Joker丶D</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ydong9366-dev.github.io/2026/09/17/MANTA-Reading/">https://ydong9366-dev.github.io/2026/09/17/MANTA-Reading/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ydong9366-dev.github.io" target="_blank">Joker丶D的游乐园</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93/">多智能体</a><a class="post-meta__tags" href="/tags/MANTA/">MANTA</a></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/09/19/OS-Study/" title="操作系统学习笔记"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">操作系统学习笔记</div></div><div class="info-2"><div class="info-item-1">整理操作系统的基本概念、特征与核心知识，用直观例子记录学习过程中的理解。</div></div></div></a><a class="pagination-related" href="/2026/09/17/About-Me/" title="关于我"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">关于我</div></div><div class="info-2"><div class="info-item-1">一个研究生的个人角落：论文阅读、学习笔记，以及奇奇怪怪的思考。</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/10/10/IoA/" title="IoA 与多智能体协作笔记"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-10</div><div class="info-item-2">IoA 与多智能体协作笔记</div></div><div class="info-2"><div class="info-item-1">从旅行规划的例子出发，理解 IoA 与多智能体系统的联系，并记录协作与训练机制。</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Joker丶D</div><div class="author-info-description">记录论文阅读、计算机学习，以及生活里的小小发现。</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">5</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">7</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ydong9366-dev"><i class="fab fa-github"></i><span>我的 GitHub</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/ydong9366-dev" target="_blank" title="GitHub"><i class="fab fa-github"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#0%E3%80%81%E6%A0%B8%E5%BF%83%E6%80%BB%E7%BB%93"><span class="toc-number">1.</span> <span class="toc-text">0、核心总结</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E8%BF%99%E7%AF%87%E8%AE%BA%E6%96%87%E5%9C%A8%E8%A7%A3%E5%86%B3%E4%BB%80%E4%B9%88%E9%97%AE%E9%A2%98%EF%BC%9F"><span class="toc-number">2.</span> <span class="toc-text">一、这篇论文在解决什么问题？</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81MANTA-%E6%98%AF%E6%80%8E%E4%B9%88%E5%81%9A%E7%9A%84%EF%BC%9F"><span class="toc-number">3.</span> <span class="toc-text">二、MANTA 是怎么做的？</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Step1%EF%BC%9A%E7%BB%84%E9%98%9F"><span class="toc-number">3.1.</span> <span class="toc-text">Step1：组队</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Step2%EF%BC%9A%E8%B7%91%E4%B8%80%E8%BD%AE%E8%AF%95%E8%AF%95"><span class="toc-number">3.2.</span> <span class="toc-text">Step2：跑一轮试试</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Step3%EF%BC%9A%E6%A3%80%E6%9F%A5%E8%BF%87%E7%A8%8B%E6%9C%89%E6%B2%A1%E6%9C%89%E6%AF%9B%E7%97%85"><span class="toc-number">3.3.</span> <span class="toc-text">Step3：检查过程有没有毛病</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Step4%EF%BC%9A%E6%9C%80%E5%A4%9A%E6%94%B9%E4%B8%80%E6%AC%A1%E7%BB%93%E6%9E%84"><span class="toc-number">3.4.</span> <span class="toc-text">Step4：最多改一次结构</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E4%B8%A4%E4%B8%AA%E3%80%8C%E7%AC%94%E8%AE%B0%E6%9C%AC%E3%80%8D%EF%BC%9A%E5%AE%83%E6%98%AF%E6%80%8E%E4%B9%88%E8%AE%B0%E4%BD%8F%E7%BB%8F%E9%AA%8C%E7%9A%84%EF%BC%9F"><span class="toc-number">4.</span> <span class="toc-text">三、两个「笔记本」：它是怎么记住经验的？</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E6%9C%80%E5%85%B3%E9%94%AE%E7%9A%84%E4%B8%80%E6%9D%A1%E8%A7%84%E7%9F%A9%EF%BC%9A%E7%BB%9D%E5%AF%B9%E4%B8%8D%E5%91%8A%E8%AF%89%E7%B3%BB%E7%BB%9F%E7%AD%94%E6%A1%88%E5%AF%B9%E4%B8%8D%E5%AF%B9"><span class="toc-number">5.</span> <span class="toc-text">四、最关键的一条规矩：绝对不告诉系统答案对不对</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/10/IoA/" title="IoA 与多智能体协作笔记">IoA 与多智能体协作笔记</a><time datetime="2026-10-10T10:27:31.000Z" title="发表于 2026-10-10 18:27:31">2026-10-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/20/RL/" title="强化学习笔记：从基本概念到贝尔曼方程">强化学习笔记：从基本概念到贝尔曼方程</a><time datetime="2026-09-20T07:08:17.000Z" title="发表于 2026-09-20 15:08:17">2026-09-20</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/19/OS-Study/" title="操作系统学习笔记">操作系统学习笔记</a><time datetime="2026-09-19T07:03:43.000Z" title="发表于 2026-09-19 15:03:43">2026-09-19</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/17/MANTA-Reading/" title="MANTA 论文阅读笔记">MANTA 论文阅读笔记</a><time datetime="2026-09-17T06:13:48.000Z" title="发表于 2026-09-17 14:13:48">2026-09-17</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/17/About-Me/" title="关于我">关于我</a><time datetime="2026-09-17T05:40:33.000Z" title="发表于 2026-09-17 13:40:33">2026-09-17</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By Joker丶D</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.7.1.260810</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.7.1.260810"></script><script src="/js/main.js?v=5.7.1.260810"></script><div class="js-pjax"></div></div></body></html>

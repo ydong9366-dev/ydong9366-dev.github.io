@@ -1,0 +1,646 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>IoA 与多智能体协作笔记 | Joker丶D的游乐园</title><meta name="author" content="Joker丶D"><meta name="copyright" content="Joker丶D"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="从旅行规划的例子出发，理解 IoA 与多智能体系统的联系，并记录协作与训练机制。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="IoA 与多智能体协作笔记">
+<meta property="og:url" content="https://ydong9366-dev.github.io/2026/10/10/IoA/index.html">
+<meta property="og:site_name" content="Joker丶D的游乐园">
+<meta property="og:description" content="从旅行规划的例子出发，理解 IoA 与多智能体系统的联系，并记录协作与训练机制。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ydong9366-dev.github.io/img/butterfly-icon.png">
+<meta property="article:published_time" content="2026-10-10T10:27:31.000Z">
+<meta property="article:modified_time" content="2026-10-16T11:44:14.358Z">
+<meta property="article:author" content="Joker丶D">
+<meta property="article:tag" content="IoA">
+<meta property="article:tag" content="多智能体">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ydong9366-dev.github.io/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "IoA 与多智能体协作笔记",
+  "url": "https://ydong9366-dev.github.io/2026/10/10/IoA/",
+  "image": "https://ydong9366-dev.github.io/img/butterfly-icon.png",
+  "datePublished": "2026-10-10T10:27:31.000Z",
+  "dateModified": "2026-10-16T11:44:14.358Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Joker丶D",
+      "url": "https://ydong9366-dev.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://ydong9366-dev.github.io/2026/10/10/IoA/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css?v=5.7.1.260810"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        try {
+          const data = { value }
+
+          if (ttl != null) {
+            data.expiry = Date.now() + ttl * 86400000
+          }
+
+          localStorage.setItem(key, JSON.stringify(data))
+        } catch (e) {
+          console.error(e)
+        }
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'IoA 与多智能体协作笔记',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css"><meta name="generator" content="Hexo 8.1.2"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">5</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">7</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/2026/09/17/About-Me/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg fixed" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Joker丶D的游乐园</span></a><a class="nav-page-title" href="/"><span class="site-name">IoA 与多智能体协作笔记</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/2026/09/17/About-Me/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">IoA 与多智能体协作笔记</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-10T10:27:31.000Z" title="发表于 2026-10-10 18:27:31">2026-10-10</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-16T11:44:14.358Z" title="更新于 2026-10-16 19:44:14">2026-10-16</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/">论文阅读</a></span></div><div class="meta-secondline"></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="一、IoA-MAS"><a href="#一、IoA-MAS" class="headerlink" title="一、IoA &amp; MAS"></a>一、IoA &amp; MAS</h1><p>假设，你现在准备去旅游，需要进行旅游计划的设定。</p>
+<h2 id="1、MAS"><a href="#1、MAS" class="headerlink" title="1、MAS"></a>1、MAS</h2><p>假定你现在的团队里有三个智能体：行程Agent、酒店Agent、天气Agent</p>
+<p>随后你告诉他，你准备规划一次去北京的三日游</p>
+<p>接下来，MAS将进行下述工作：行程规划师制定路线。酒店专家提供酒店信息。天气专家提供天气预报。它们交换信息，调整行程，最后给你一份完整的旅游计划。</p>
+<h2 id="2、IoA"><a href="#2、IoA" class="headerlink" title="2、IoA"></a>2、IoA</h2><p>你不再只有自己团队里的三个 AI 助手，而是可以连接互联网上不同公司、不同平台提供的智能体。</p>
+<p>然后，你依旧让其帮你规划一次去北京的三日游</p>
+<p>系统可以根据你的需求，发现有哪些智能体可用。判断哪些智能体具备所需能力。选择合适的智能体。建立它们之间的连接，让它们协作完成旅行规划。</p>
+<h2 id="3、核心区别"><a href="#3、核心区别" class="headerlink" title="3、核心区别"></a>3、核心区别</h2><p>MAS 更多的是研究“这群 AI 怎么合作”；IoA 更进一步关注“怎么从更大的智能体网络中找到合适的 AI，并把它们连接起来合作”。</p>
+<h1 id="二、什么是VIT"><a href="#二、什么是VIT" class="headerlink" title="二、什么是VIT"></a>二、什么是VIT</h1><p>**ViT（Vision Transformer，视觉Transformer）**是一种让 Transformer“看懂图片”的模型。它的核心思想很直观：</p>
+<blockquote>
+<p>不再像传统卷积网络那样一点点扫描图片，而是把图片切成许多小块，把每个小块当成一个“单词”，再像阅读句子一样理解整张图片。</p>
+</blockquote>
+<h3 id="1-先把图片切成小块"><a href="#1-先把图片切成小块" class="headerlink" title="1. 先把图片切成小块"></a>1. 先把图片切成小块</h3><p>假设输入图片大小为 (224\times224)，ViT 把它切成很多 (16\times16) 的小方块：</p>
+<p>[ 224&#x2F;16&#x3D;14 ]</p>
+<p>所以一共得到：[ 14\times14&#x3D;196 ]个图像块，即 <strong>Patch</strong>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">一张图片</span><br><span class="line">┌─────────────────────┐</span><br><span class="line">│ □ □ □ □ □ □ □ ... │</span><br><span class="line">│ □ □ □ □ □ □ □ ... │</span><br><span class="line">│ □ □ □ □ □ □ □ ... │</span><br><span class="line">│ ...                 │</span><br><span class="line">└─────────────────────┘</span><br><span class="line">       ↓</span><br><span class="line">196 个 Patch</span><br></pre></td></tr></table></figure>
+
+<p>就像把一句话拆成很多词：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">“这 / 是 / 一把 / 椅子”</span><br></pre></td></tr></table></figure>
+
+<p>ViT 把图片拆成：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">“左上角图块 / 中间图块 / 椅背图块 / 椅腿图块……”</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-把每个图块变成一串数字"><a href="#2-把每个图块变成一串数字" class="headerlink" title="2. 把每个图块变成一串数字"></a>2. 把每个图块变成一串数字</h3><p>计算机不能直接理解图片块，因此 ViT 会把每个 Patch 转换成一个向量，这一步称为 <strong>Patch Embedding</strong>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">图像块 → 数字向量</span><br></pre></td></tr></table></figure>
+
+<p>例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">椅背图块 → [0.21, -0.45, 0.78, ...]</span><br><span class="line">椅腿图块 → [0.63,  0.12, -0.31, ...]</span><br></pre></td></tr></table></figure>
+
+<p>这相当于把自然语言中的词转换成词向量。</p>
+<p>这也是PE-IoA论文中 <strong>Input layer</strong> 对应的位置：它负责把原始图像块转换成 Transformer 能处理的 token。</p>
+<h3 id="3-告诉模型每个图块在哪里"><a href="#3-告诉模型每个图块在哪里" class="headerlink" title="3. 告诉模型每个图块在哪里"></a>3. 告诉模型每个图块在哪里</h3><p>如果只给 ViT 196 个图块向量，它不知道哪个来自左上角、哪个来自右下角。因此还要加入<strong>位置编码（Positional Encoding）</strong>：</p>
+<p>[ z_i&#x3D;\text{PatchEmbedding}(x_i)+\text{PositionEmbedding}_i ]</p>
+<p>位置编码相当于告诉模型：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">这个图块来自第 1 行第 2 列</span><br><span class="line">那个图块来自图片中央</span><br></pre></td></tr></table></figure>
+
+<p>否则模型看到的只是一袋无序图块。</p>
+<h3 id="4-加入一个特殊的-CLS-标记"><a href="#4-加入一个特殊的-CLS-标记" class="headerlink" title="4. 加入一个特殊的 CLS 标记"></a>4. 加入一个特殊的 CLS 标记</h3><p>ViT 通常在所有图块前加入一个特殊的 <strong>CLS token</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[CLS] [Patch 1] [Patch 2] ... [Patch 196]</span><br></pre></td></tr></table></figure>
+
+<p>CLS 可以理解为一张“汇总纸”。其他图块经过 Transformer 交流后，整张图片的重要信息逐渐汇聚到 CLS 中。</p>
+<p>最终模型使用 CLS 的表示判断图片类别：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CLS → 分类器 → “这是一把椅子”</span><br></pre></td></tr></table></figure>
+
+<p>PE-IoA 论文中的共享适配器和个性化适配器分别产生一路 CLS 特征，然后把两路特征拼接起来：</p>
+<p>[ h_i^f&#x3D;\Lambda([h_i^p,h_i^s]) ]</p>
+<p>其中：</p>
+<ul>
+<li>(h_i^p)：个性化适配器产生的特征；</li>
+<li>(h_i^s)：共享适配器产生的特征；</li>
+<li>(\Lambda)：融合层；</li>
+<li>(h_i^f)：融合后的最终特征。</li>
+</ul>
+<h3 id="5-用自注意力理解图块之间的关系"><a href="#5-用自注意力理解图块之间的关系" class="headerlink" title="5. 用自注意力理解图块之间的关系"></a>5. 用自注意力理解图块之间的关系</h3><p>ViT 最重要的机制是<strong>自注意力（Self-Attention）</strong>。它让每个图块都能判断其他图块与自己有多大关系。</p>
+<p>例如，模型识别自行车时：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">车轮图块 ──关注──→ 另一个车轮图块</span><br><span class="line">车轮图块 ──关注──→ 车架图块</span><br><span class="line">车座图块 ──关注──→ 车架图块</span><br><span class="line">背景天空 ──较少关注──→ 车轮图块</span><br></pre></td></tr></table></figure>
+
+<p>因此，ViT 不只是单独观察每个小块，还会建立整张图片不同区域之间的关系。</p>
+<p>通俗地说，传统卷积网络更像：</p>
+<blockquote>
+<p>从附近开始观察，再逐渐扩大视野。</p>
+</blockquote>
+<p>ViT 更像：</p>
+<blockquote>
+<p>每个图块从一开始就可以查看整张图，并决定应该关注哪些其他图块。</p>
+</blockquote>
+<h3 id="6-多头注意力是什么？"><a href="#6-多头注意力是什么？" class="headerlink" title="6. 多头注意力是什么？"></a>6. 多头注意力是什么？</h3><p>ViT 通常使用<strong>多头注意力（Multi-Head Attention）</strong>。可以把每个“头”理解成一种不同的观察角度：</p>
+<ul>
+<li>一个头关注形状；</li>
+<li>一个头关注颜色；</li>
+<li>一个头关注物体各部分的位置关系；</li>
+<li>一个头关注前景与背景。</li>
+</ul>
+<p>然后把这些观察结果综合起来。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">同一张图片</span><br><span class="line">   ├→ 注意力头 1：观察轮廓</span><br><span class="line">   ├→ 注意力头 2：观察纹理</span><br><span class="line">   ├→ 注意力头 3：观察位置关系</span><br><span class="line">   └→ 注意力头 4：观察背景</span><br><span class="line">              ↓</span><br><span class="line">           综合判断</span><br></pre></td></tr></table></figure>
+
+<h3 id="7-ViT-的整体流程"><a href="#7-ViT-的整体流程" class="headerlink" title="7. ViT 的整体流程"></a>7. ViT 的整体流程</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">输入图片</span><br><span class="line">   ↓</span><br><span class="line">切成多个 Patch</span><br><span class="line">   ↓</span><br><span class="line">Patch Embedding：图块变成向量</span><br><span class="line">   ↓</span><br><span class="line">加入位置编码和 CLS token</span><br><span class="line">   ↓</span><br><span class="line">多层 Transformer</span><br><span class="line">   ├─ 多头自注意力</span><br><span class="line">   ├─ 前馈神经网络</span><br><span class="line">   └─ 残差连接与归一化</span><br><span class="line">   ↓</span><br><span class="line">取出 CLS 特征</span><br><span class="line">   ↓</span><br><span class="line">全连接分类层</span><br><span class="line">   ↓</span><br><span class="line">输出类别</span><br></pre></td></tr></table></figure>
+
+<p>可以简化为：</p>
+<p>[ \text{图片}\rightarrow\text{图块序列} \rightarrow\text{Transformer} \rightarrow\text{CLS} \rightarrow\text{分类结果} ]</p>
+<h3 id="8-ViT-与传统-CNN-有什么不同？"><a href="#8-ViT-与传统-CNN-有什么不同？" class="headerlink" title="8. ViT 与传统 CNN 有什么不同？"></a>8. ViT 与传统 CNN 有什么不同？</h3><table>
+<thead>
+<tr>
+<th>对比</th>
+<th>CNN</th>
+<th>ViT</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>看图片的方式</td>
+<td>使用卷积核扫描局部区域</td>
+<td>把图片切成图块序列</td>
+</tr>
+<tr>
+<td>初始视野</td>
+<td>主要关注邻近像素</td>
+<td>可直接联系远距离图块</td>
+</tr>
+<tr>
+<td>核心机制</td>
+<td>卷积</td>
+<td>自注意力</td>
+</tr>
+<tr>
+<td>内置图像规律</td>
+<td>较强，例如局部性</td>
+<td>较弱，需要从数据中学习</td>
+</tr>
+<tr>
+<td>数据需求</td>
+<td>相对较低</td>
+<td>通常需要更多数据或预训练</td>
+</tr>
+<tr>
+<td>与语言模型的关系</td>
+<td>架构不同</td>
+<td>与语言 Transformer 高度相似</td>
+</tr>
+</tbody></table>
+<p>CNN 像一个人拿着放大镜从左到右查看图片；ViT 像把所有图块摆在桌上，同时分析它们之间的关系。</p>
+<h3 id="9-为什么论文选择-ViT？"><a href="#9-为什么论文选择-ViT？" class="headerlink" title="9. 为什么论文选择 ViT？"></a>9. 为什么论文选择 ViT？</h3><p>因为 ViT 参数量较大，而且结构与 LLM 都建立在 Transformer 上，适合验证：</p>
+<ol>
+<li>冻结大型主干是否能节省训练成本；</li>
+<li>Adapter 是否能以少量参数调整模型；</li>
+<li>多个智能体是否可以只交换 Adapter；</li>
+<li>共享知识和个性化知识能否分开学习。</li>
+</ol>
+<p>在 PE-IoA 中：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">冻结的 ViT 主干</span><br><span class="line">   ├→ 个性化 Adapter vi：学习本智能体的数据特点</span><br><span class="line">   └→ 共享 Adapter wi：学习可在智能体间传播的知识</span><br></pre></td></tr></table></figure>
+
+<p>例如 Office-Home：</p>
+<ul>
+<li>个性化 Adapter 学习 Art、Clipart 或 Product 的特殊风格；</li>
+<li>共享 Adapter 学习“椅子、电脑、杯子”等跨域通用结构。</li>
+</ul>
+<p>不过，ViT 与 LLM 架构相似不等于任务相同。ViT 实验只能证明 PE-IoA 对 Transformer 视觉分类有效，不能直接证明它对语言智能体的推理、规划和工具调用同样有效。</p>
+<h1 id="三、PE-IoA"><a href="#三、PE-IoA" class="headerlink" title="三、PE-IoA"></a>三、PE-IoA</h1><h2 id="1、在去中心化的智能体网络中应用大模型会存在什么问题？"><a href="#1、在去中心化的智能体网络中应用大模型会存在什么问题？" class="headerlink" title="1、在去中心化的智能体网络中应用大模型会存在什么问题？"></a>1、在去中心化的智能体网络中应用大模型会存在什么问题？</h2><ul>
+<li>沟通与计算成本太高：智能体之间互相传输和更新知识需要耗费极大的算力和网络带宽，导致成本过高。</li>
+<li>协作机制太僵化：现有的训练模式要么“各扫门前雪”（完全独立），要么“吃大锅饭”（强制统一），无法让智能体之间实现灵活且精细的共同进步。</li>
+<li>难以平衡“团队共性”与“个人特长”： 每个智能体都有自己的专属任务，导致掌握的信息不同。如果强行让大家共享统一的知识，会抹杀它们各自的专业优势；如果完全不共享，又会变成一盘散沙，失去合作的意义，导致团队很难步调一致地做决策。</li>
+</ul>
+<h2 id="2、Related-work"><a href="#2、Related-work" class="headerlink" title="2、Related work"></a>2、Related work</h2><p>早期的基于通信的方法（CommNet &amp; DIAL) 在实际应用中不可行。</p>
+<p>后续研究（例如 TarMAC, OPV2V) 有限且存在偏差的数据集可能导致模型过拟合。</p>
+<p>DiscoNet 和 MKD-Cooper 等知识蒸馏框架。降低了成本，但它们是静态的，不支持对同伴知识进行动态且具有上下文感知能力的整合。此外，它们往往过度压缩信息，导致在演化环境中的语义丰富性和适应性丧失。</p>
+<p>LoRA 和 Adapter Tuning 等参数高效微调（PEFT）的方法主要针对单智能体或集中式环境设计，缺乏对智能体间协作的支持</p>
+<h2 id="3、PE-IoA要做什么？怎么做的？"><a href="#3、PE-IoA要做什么？怎么做的？" class="headerlink" title="3、PE-IoA要做什么？怎么做的？"></a>3、PE-IoA要做什么？怎么做的？</h2><p>无中央服务器的条件下，同时获得低成本通信、群体知识共享和个体适应能力。</p>
+<p>构建了一个双适配器结构：</p>
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>冻结主干 (\theta_{\text{freeze}})</td>
+<td>提供通用表示</td>
+</tr>
+<tr>
+<td>个性化适配器 (v_i)</td>
+<td>学习本地数据、角色偏好</td>
+</tr>
+<tr>
+<td>共享适配器 (w_i)</td>
+<td>吸收并传播群体知识</td>
+</tr>
+<tr>
+<td>融合层 (\Lambda)</td>
+<td>拼接两路 CLS 特征，1536→768</td>
+</tr>
+</tbody></table>
+<h2 id="4、PE-IoA的训练过程"><a href="#4、PE-IoA的训练过程" class="headerlink" title="4、PE-IoA的训练过程"></a>4、PE-IoA的训练过程</h2><ol>
+<li>每个智能体在不同的域【例如，某一个域里面只有艺术画】同时训练<span class="math-inline">$v_i$</span>,τ次。</li>
+<li>每个智能体训练完<span class="math-inline">$v_i$</span>之后，再更新各自的共享适配器<span class="math-inline">$w_i$</span></li>
+<li>随后再与邻居智能体交换并聚合共享适配器</li>
+</ol>
+<h2 id="5、PE-IoA-的实验设计思路是怎样的"><a href="#5、PE-IoA-的实验设计思路是怎样的" class="headerlink" title="5、PE-IoA 的实验设计思路是怎样的"></a>5、PE-IoA 的实验设计思路是怎样的</h2><p>PE-IoA 的实验围绕四个递进问题展开：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">是否有效？</span><br><span class="line">   ↓</span><br><span class="line">网络变差后是否稳定？</span><br><span class="line">   ↓</span><br><span class="line">是否真的节省参数与通信？</span><br><span class="line">   ↓</span><br><span class="line">为什么有效、参数如何选择？</span><br></pre></td></tr></table></figure>
+
+<h4 id="1-构造多智能体异构环境"><a href="#1-构造多智能体异构环境" class="headerlink" title="1. 构造多智能体异构环境"></a>1. 构造多智能体异构环境</h4><p>作者选择三个跨域图像分类数据集：</p>
+<table>
+<thead>
+<tr>
+<th>数据集</th>
+<th>域&#x2F;智能体数量</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Office-Home</td>
+<td>4</td>
+<td>65 类，约 1.55 万张图像</td>
+</tr>
+<tr>
+<td>Office-Caltech10</td>
+<td>4</td>
+<td>10 类，规模较小</td>
+</tr>
+<tr>
+<td>DomainNet</td>
+<td>6</td>
+<td>345 类，约 60 万张图像，异质性最强</td>
+</tr>
+</tbody></table>
+<p>每个“域”分配给一个智能体。例如 Office-Home 的 Art、Clipart、Product、Real-World 分别由四个节点持有。智能体只看到本域的部分标注数据，默认训练比例为 80%，且不同域中同一类别的样本数量不相同。即[ P_1(x,y)\neq P_2(x,y)\neq\cdots\neq P_N(x,y) ]。</p>
+<h4 id="2-设置三种通信拓扑"><a href="#2-设置三种通信拓扑" class="headerlink" title="2. 设置三种通信拓扑"></a>2. 设置三种通信拓扑</h4><table>
+<thead>
+<tr>
+<th>拓扑</th>
+<th>通信方式</th>
+<th>难度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>FC</td>
+<td>每个智能体都与其他智能体连接</td>
+<td>通信最充分</td>
+</tr>
+<tr>
+<td>ER</td>
+<td>随机稀疏连接，但整体连通</td>
+<td>中等</td>
+</tr>
+<tr>
+<td>Ring</td>
+<td>每个智能体主要与相邻节点连接</td>
+<td>通信最受限</td>
+</tr>
+</tbody></table>
+<p>如果方法只在 FC 中有效，说明它依赖高强度通信。PE-IoA 在三种拓扑间波动较小，构成了论文的拓扑鲁棒性证据。</p>
+<h4 id="3-设置三类比较对象"><a href="#3-设置三类比较对象" class="headerlink" title="3. 设置三类比较对象"></a>3. 设置三类比较对象</h4><ul>
+<li><strong>Indep</strong>：每个智能体独立训练完整模型，不通信；</li>
+<li><strong>DSGD-SIM</strong>：共享部分和个性化部分同时更新；</li>
+<li><strong>DSGD-ALT</strong>：共享部分和个性化部分交替更新；</li>
+<li><strong>PE-IoA</strong>：冻结 ViT，只训练双适配器，并仅通信共享适配器。</li>
+</ul>
+<p>SIM&#x2F;ALT 又分别测试 Input、Out、Adapter 三个个性化位置，因此实际形成六个传统个性化基线。</p>
+<p>这一比较试图回答两个问题：</p>
+<ol>
+<li>与完全独立训练相比，智能体通信有没有价值？</li>
+<li>与传统共享大模型相比，只传共享 Adapter 是否更高效？</li>
+</ol>
+<h4 id="4-同时测量性能和成本"><a href="#4-同时测量性能和成本" class="headerlink" title="4. 同时测量性能和成本"></a>4. 同时测量性能和成本</h4><p>论文采用三类指标：分类准确率；每轮通信参数量；本地训练参数量。</p>
+<p>例如 Office-Home 上：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>准确率（FC）</th>
+<th>通信参数</th>
+<th>训练参数</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>独立全模型</td>
+<td>83.54%</td>
+<td>0</td>
+<td>85.85M</td>
+</tr>
+<tr>
+<td>DSGD-SIM Out</td>
+<td>87.75%</td>
+<td>85.80M</td>
+<td>85.85M</td>
+</tr>
+<tr>
+<td>PE-IoA</td>
+<td>87.55%</td>
+<td><strong>0.96M</strong></td>
+<td><strong>1.92M</strong></td>
+</tr>
+</tbody></table>
+<p>这组结果揭示了论文真正的优势：PE-IoA 不一定始终取得最高准确率，但能以不到传统方法 2% 的参数开销取得接近最优的性能。</p>
+<h4 id="5-通过消融实验解释原因"><a href="#5-通过消融实验解释原因" class="headerlink" title="5. 通过消融实验解释原因"></a>5. 通过消融实验解释原因</h4><p>作者进一步验证了：</p>
+<ul>
+<li><strong>图3</strong>：改变 Adapter 压缩倍数，验证准确率与参数量的折中；</li>
+<li><strong>图4</strong>：比较独立、固定个性化和自适应个性化；</li>
+<li><strong>图5</strong>：展示不同智能体的数据量和类别分布确实不均衡；</li>
+<li><strong>图6</strong>：设置 10% 掉线率，检查通信不稳定时是否仍能收敛。</li>
+</ul>
+<p>因此，整套实验的基本逻辑是：</p>
+<blockquote>
+<p>主实验验证效果，拓扑实验验证稳定性，参数统计验证效率，消融实验解释机制。</p>
+</blockquote>
+<hr>
+<h2 id="6、可以从-PE-IoA-学到什么，并应用到后续科研中？"><a href="#6、可以从-PE-IoA-学到什么，并应用到后续科研中？" class="headerlink" title="6、可以从 PE-IoA 学到什么，并应用到后续科研中？"></a>6、可以从 PE-IoA 学到什么，并应用到后续科研中？</h2><h4 id="1-把“共享知识”和“个性知识”显式分开"><a href="#1-把“共享知识”和“个性知识”显式分开" class="headerlink" title="1. 把“共享知识”和“个性知识”显式分开"></a>1. 把“共享知识”和“个性知识”显式分开</h4><p>[ \text{智能体能力} &#x3D; \text{共享知识} + \text{个性化知识} ]</p>
+<p>可以把不同知识分别放入不同模块：</p>
+<table>
+<thead>
+<tr>
+<th>信息类型</th>
+<th>适合放置的位置</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>通用推理策略</td>
+<td>共享 Adapter</td>
+</tr>
+<tr>
+<td>角色、偏好、私有领域知识</td>
+<td>个性化 Adapter</td>
+</tr>
+<tr>
+<td>大规模基础能力</td>
+<td>冻结主干</td>
+</tr>
+<tr>
+<td>如何组合两类知识</td>
+<td>可学习融合层</td>
+</tr>
+</tbody></table>
+<p>该思路可以进一步用于 LLM 智能体：共享 Adapter 学习协作和任务分解，私有 Adapter 学习每个智能体的角色与专业知识。</p>
+<h4 id="2-通信应交换“知识增量”，而不是完整模型"><a href="#2-通信应交换“知识增量”，而不是完整模型" class="headerlink" title="2. 通信应交换“知识增量”，而不是完整模型"></a>2. 通信应交换“知识增量”，而不是完整模型</h4><blockquote>
+<p>协作所需的信息量，可以远小于模型本身的参数量。</p>
+</blockquote>
+<h4 id="3-实验设计应从性能扩展到系统成本"><a href="#3-实验设计应从性能扩展到系统成本" class="headerlink" title="3. 实验设计应从性能扩展到系统成本"></a>3. 实验设计应从性能扩展到系统成本</h4><p>[ \text{效果、通信量、训练量、显存、延迟、能耗} ]</p>
+<h4 id="4-下一步最有价值的研究想法"><a href="#4-下一步最有价值的研究想法" class="headerlink" title="4. 下一步最有价值的研究想法"></a>4. 下一步最有价值的研究想法</h4><ul>
+<li>根据任务动态选择共享或私有 Adapter；</li>
+<li>不同智能体按数据量使用不同 Adapter 宽度；</li>
+<li>根据邻居知识价值学习通信权重，而非固定矩阵 (P)；</li>
+<li>异步更新，避免快节点等待慢节点；</li>
+<li>检测恶意或低质量 Adapter 更新；</li>
+<li>将共享 Adapter 扩展到 LLM 的规划、工具调用和多轮协作。</li>
+</ul>
+<hr>
+<h2 id="7、PE-IoA-的局限在哪里？"><a href="#7、PE-IoA-的局限在哪里？" class="headerlink" title="7、PE-IoA 的局限在哪里？"></a>7、PE-IoA 的局限在哪里？</h2><h4 id="1-尚未真正验证-LLM-智能体"><a href="#1-尚未真正验证-LLM-智能体" class="headerlink" title="1. 尚未真正验证 LLM 智能体"></a>1. 尚未真正验证 LLM 智能体</h4><p>实验全部是 ViT 图像分类。实验中的“智能体”本质上是持有不同数据分区的训练节点，并未涉及：</p>
+<ul>
+<li>对话和自然语言推理；</li>
+<li>任务规划；</li>
+<li>工具调用；</li>
+<li>智能体之间的语义消息；</li>
+<li>长期记忆和角色协作。</li>
+</ul>
+<h4 id="2-准确率并非全面优于基线"><a href="#2-准确率并非全面优于基线" class="headerlink" title="2. 准确率并非全面优于基线"></a>2. 准确率并非全面优于基线</h4><p>论文最可靠的结论：</p>
+<blockquote>
+<p>PE-IoA 以极低成本取得有竞争力的准确率。</p>
+</blockquote>
+<h4 id="3-成本指标只是参数量代理"><a href="#3-成本指标只是参数量代理" class="headerlink" title="3. 成本指标只是参数量代理"></a>3. 成本指标只是参数量代理</h4><p>论文用“传输了多少参数”代表通信成本，用“更新了多少参数”代表训练成本，但没有直接报告：</p>
+<ul>
+<li>实际传输字节；</li>
+<li>通信延迟；</li>
+<li>训练时间；</li>
+<li>GPU 显存；</li>
+<li>FLOPs；</li>
+<li>能耗。</li>
+</ul>
+<p>参数减少 98%不必然意味着端到端时间也减少 98%，因为还存在协议、同步和硬件开销。</p>
+<h4 id="4-理论假设比现实理想"><a href="#4-理论假设比现实理想" class="headerlink" title="4. 理论假设比现实理想"></a>4. 理论假设比现实理想</h4><p>收敛分析依赖平滑损失、梯度方差有界、双随机通信矩阵和连通网络等假设。现实 IoA 中可能存在：</p>
+<ul>
+<li>节点异步；</li>
+<li>算力和数据量差异；</li>
+<li>长期掉线；</li>
+<li>网络拓扑不断变化；</li>
+<li>恶意或错误更新；</li>
+<li>Adapter 版本不一致。</li>
+</ul>
+<p>论文只测试了 10%的随机掉线，尚不足以覆盖这些复杂情形。</p>
+<p>PE-IoA 的主要价值是提出了一个清晰且高效的“冻结主干、共享小模块、保留私有模块”架构。关于真实 LLM 智能体协作、统计稳定性和现实系统收益的结论，仍需要更强实验验证。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://ydong9366-dev.github.io">Joker丶D</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://ydong9366-dev.github.io/2026/10/10/IoA/">https://ydong9366-dev.github.io/2026/10/10/IoA/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://ydong9366-dev.github.io" target="_blank">Joker丶D的游乐园</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/IoA/">IoA</a><a class="post-meta__tags" href="/tags/%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93/">多智能体</a></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/09/20/RL/" title="强化学习笔记：从基本概念到贝尔曼方程"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">强化学习笔记：从基本概念到贝尔曼方程</div></div><div class="info-2"><div class="info-item-1">以超级玛丽为例，理解状态、动作、奖励、策略与价值函数，逐步推导贝尔曼期望方程和最优方程。</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/09/17/MANTA-Reading/" title="MANTA 论文阅读笔记"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-17</div><div class="info-item-2">MANTA 论文阅读笔记</div></div><div class="info-2"><div class="info-item-1">梳理 MANTA 的内外循环、智能体拓扑建立与协作过程，记录关键机制及阅读思考。</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Joker丶D</div><div class="author-info-description">记录论文阅读、计算机学习，以及生活里的小小发现。</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">5</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">7</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ydong9366-dev"><i class="fab fa-github"></i><span>我的 GitHub</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/ydong9366-dev" target="_blank" title="GitHub"><i class="fab fa-github"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81IoA-MAS"><span class="toc-number">1.</span> <span class="toc-text">一、IoA &amp; MAS</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1%E3%80%81MAS"><span class="toc-number">1.1.</span> <span class="toc-text">1、MAS</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2%E3%80%81IoA"><span class="toc-number">1.2.</span> <span class="toc-text">2、IoA</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3%E3%80%81%E6%A0%B8%E5%BF%83%E5%8C%BA%E5%88%AB"><span class="toc-number">1.3.</span> <span class="toc-text">3、核心区别</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E4%BB%80%E4%B9%88%E6%98%AFVIT"><span class="toc-number">2.</span> <span class="toc-text">二、什么是VIT</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%85%88%E6%8A%8A%E5%9B%BE%E7%89%87%E5%88%87%E6%88%90%E5%B0%8F%E5%9D%97"><span class="toc-number">2.1.</span> <span class="toc-text">1. 先把图片切成小块</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E6%8A%8A%E6%AF%8F%E4%B8%AA%E5%9B%BE%E5%9D%97%E5%8F%98%E6%88%90%E4%B8%80%E4%B8%B2%E6%95%B0%E5%AD%97"><span class="toc-number">2.2.</span> <span class="toc-text">2. 把每个图块变成一串数字</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%91%8A%E8%AF%89%E6%A8%A1%E5%9E%8B%E6%AF%8F%E4%B8%AA%E5%9B%BE%E5%9D%97%E5%9C%A8%E5%93%AA%E9%87%8C"><span class="toc-number">2.3.</span> <span class="toc-text">3. 告诉模型每个图块在哪里</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E5%8A%A0%E5%85%A5%E4%B8%80%E4%B8%AA%E7%89%B9%E6%AE%8A%E7%9A%84-CLS-%E6%A0%87%E8%AE%B0"><span class="toc-number">2.4.</span> <span class="toc-text">4. 加入一个特殊的 CLS 标记</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E7%94%A8%E8%87%AA%E6%B3%A8%E6%84%8F%E5%8A%9B%E7%90%86%E8%A7%A3%E5%9B%BE%E5%9D%97%E4%B9%8B%E9%97%B4%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-number">2.5.</span> <span class="toc-text">5. 用自注意力理解图块之间的关系</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-%E5%A4%9A%E5%A4%B4%E6%B3%A8%E6%84%8F%E5%8A%9B%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-number">2.6.</span> <span class="toc-text">6. 多头注意力是什么？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-ViT-%E7%9A%84%E6%95%B4%E4%BD%93%E6%B5%81%E7%A8%8B"><span class="toc-number">2.7.</span> <span class="toc-text">7. ViT 的整体流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-ViT-%E4%B8%8E%E4%BC%A0%E7%BB%9F-CNN-%E6%9C%89%E4%BB%80%E4%B9%88%E4%B8%8D%E5%90%8C%EF%BC%9F"><span class="toc-number">2.8.</span> <span class="toc-text">8. ViT 与传统 CNN 有什么不同？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%AE%BA%E6%96%87%E9%80%89%E6%8B%A9-ViT%EF%BC%9F"><span class="toc-number">2.9.</span> <span class="toc-text">9. 为什么论文选择 ViT？</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E3%80%81PE-IoA"><span class="toc-number">3.</span> <span class="toc-text">三、PE-IoA</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1%E3%80%81%E5%9C%A8%E5%8E%BB%E4%B8%AD%E5%BF%83%E5%8C%96%E7%9A%84%E6%99%BA%E8%83%BD%E4%BD%93%E7%BD%91%E7%BB%9C%E4%B8%AD%E5%BA%94%E7%94%A8%E5%A4%A7%E6%A8%A1%E5%9E%8B%E4%BC%9A%E5%AD%98%E5%9C%A8%E4%BB%80%E4%B9%88%E9%97%AE%E9%A2%98%EF%BC%9F"><span class="toc-number">3.1.</span> <span class="toc-text">1、在去中心化的智能体网络中应用大模型会存在什么问题？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2%E3%80%81Related-work"><span class="toc-number">3.2.</span> <span class="toc-text">2、Related work</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3%E3%80%81PE-IoA%E8%A6%81%E5%81%9A%E4%BB%80%E4%B9%88%EF%BC%9F%E6%80%8E%E4%B9%88%E5%81%9A%E7%9A%84%EF%BC%9F"><span class="toc-number">3.3.</span> <span class="toc-text">3、PE-IoA要做什么？怎么做的？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4%E3%80%81PE-IoA%E7%9A%84%E8%AE%AD%E7%BB%83%E8%BF%87%E7%A8%8B"><span class="toc-number">3.4.</span> <span class="toc-text">4、PE-IoA的训练过程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5%E3%80%81PE-IoA-%E7%9A%84%E5%AE%9E%E9%AA%8C%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF%E6%98%AF%E6%80%8E%E6%A0%B7%E7%9A%84"><span class="toc-number">3.5.</span> <span class="toc-text">5、PE-IoA 的实验设计思路是怎样的</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E6%9E%84%E9%80%A0%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%BC%82%E6%9E%84%E7%8E%AF%E5%A2%83"><span class="toc-number">3.5.1.</span> <span class="toc-text">1. 构造多智能体异构环境</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E8%AE%BE%E7%BD%AE%E4%B8%89%E7%A7%8D%E9%80%9A%E4%BF%A1%E6%8B%93%E6%89%91"><span class="toc-number">3.5.2.</span> <span class="toc-text">2. 设置三种通信拓扑</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E8%AE%BE%E7%BD%AE%E4%B8%89%E7%B1%BB%E6%AF%94%E8%BE%83%E5%AF%B9%E8%B1%A1"><span class="toc-number">3.5.3.</span> <span class="toc-text">3. 设置三类比较对象</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-%E5%90%8C%E6%97%B6%E6%B5%8B%E9%87%8F%E6%80%A7%E8%83%BD%E5%92%8C%E6%88%90%E6%9C%AC"><span class="toc-number">3.5.4.</span> <span class="toc-text">4. 同时测量性能和成本</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-%E9%80%9A%E8%BF%87%E6%B6%88%E8%9E%8D%E5%AE%9E%E9%AA%8C%E8%A7%A3%E9%87%8A%E5%8E%9F%E5%9B%A0"><span class="toc-number">3.5.5.</span> <span class="toc-text">5. 通过消融实验解释原因</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6%E3%80%81%E5%8F%AF%E4%BB%A5%E4%BB%8E-PE-IoA-%E5%AD%A6%E5%88%B0%E4%BB%80%E4%B9%88%EF%BC%8C%E5%B9%B6%E5%BA%94%E7%94%A8%E5%88%B0%E5%90%8E%E7%BB%AD%E7%A7%91%E7%A0%94%E4%B8%AD%EF%BC%9F"><span class="toc-number">3.6.</span> <span class="toc-text">6、可以从 PE-IoA 学到什么，并应用到后续科研中？</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E6%8A%8A%E2%80%9C%E5%85%B1%E4%BA%AB%E7%9F%A5%E8%AF%86%E2%80%9D%E5%92%8C%E2%80%9C%E4%B8%AA%E6%80%A7%E7%9F%A5%E8%AF%86%E2%80%9D%E6%98%BE%E5%BC%8F%E5%88%86%E5%BC%80"><span class="toc-number">3.6.1.</span> <span class="toc-text">1. 把“共享知识”和“个性知识”显式分开</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E9%80%9A%E4%BF%A1%E5%BA%94%E4%BA%A4%E6%8D%A2%E2%80%9C%E7%9F%A5%E8%AF%86%E5%A2%9E%E9%87%8F%E2%80%9D%EF%BC%8C%E8%80%8C%E4%B8%8D%E6%98%AF%E5%AE%8C%E6%95%B4%E6%A8%A1%E5%9E%8B"><span class="toc-number">3.6.2.</span> <span class="toc-text">2. 通信应交换“知识增量”，而不是完整模型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E5%AE%9E%E9%AA%8C%E8%AE%BE%E8%AE%A1%E5%BA%94%E4%BB%8E%E6%80%A7%E8%83%BD%E6%89%A9%E5%B1%95%E5%88%B0%E7%B3%BB%E7%BB%9F%E6%88%90%E6%9C%AC"><span class="toc-number">3.6.3.</span> <span class="toc-text">3. 实验设计应从性能扩展到系统成本</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-%E4%B8%8B%E4%B8%80%E6%AD%A5%E6%9C%80%E6%9C%89%E4%BB%B7%E5%80%BC%E7%9A%84%E7%A0%94%E7%A9%B6%E6%83%B3%E6%B3%95"><span class="toc-number">3.6.4.</span> <span class="toc-text">4. 下一步最有价值的研究想法</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7%E3%80%81PE-IoA-%E7%9A%84%E5%B1%80%E9%99%90%E5%9C%A8%E5%93%AA%E9%87%8C%EF%BC%9F"><span class="toc-number">3.7.</span> <span class="toc-text">7、PE-IoA 的局限在哪里？</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E5%B0%9A%E6%9C%AA%E7%9C%9F%E6%AD%A3%E9%AA%8C%E8%AF%81-LLM-%E6%99%BA%E8%83%BD%E4%BD%93"><span class="toc-number">3.7.1.</span> <span class="toc-text">1. 尚未真正验证 LLM 智能体</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E5%87%86%E7%A1%AE%E7%8E%87%E5%B9%B6%E9%9D%9E%E5%85%A8%E9%9D%A2%E4%BC%98%E4%BA%8E%E5%9F%BA%E7%BA%BF"><span class="toc-number">3.7.2.</span> <span class="toc-text">2. 准确率并非全面优于基线</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E6%88%90%E6%9C%AC%E6%8C%87%E6%A0%87%E5%8F%AA%E6%98%AF%E5%8F%82%E6%95%B0%E9%87%8F%E4%BB%A3%E7%90%86"><span class="toc-number">3.7.3.</span> <span class="toc-text">3. 成本指标只是参数量代理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-%E7%90%86%E8%AE%BA%E5%81%87%E8%AE%BE%E6%AF%94%E7%8E%B0%E5%AE%9E%E7%90%86%E6%83%B3"><span class="toc-number">3.7.4.</span> <span class="toc-text">4. 理论假设比现实理想</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/10/IoA/" title="IoA 与多智能体协作笔记">IoA 与多智能体协作笔记</a><time datetime="2026-10-10T10:27:31.000Z" title="发表于 2026-10-10 18:27:31">2026-10-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/20/RL/" title="强化学习笔记：从基本概念到贝尔曼方程">强化学习笔记：从基本概念到贝尔曼方程</a><time datetime="2026-09-20T07:08:17.000Z" title="发表于 2026-09-20 15:08:17">2026-09-20</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/19/OS-Study/" title="操作系统学习笔记">操作系统学习笔记</a><time datetime="2026-09-19T07:03:43.000Z" title="发表于 2026-09-19 15:03:43">2026-09-19</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/17/MANTA-Reading/" title="MANTA 论文阅读笔记">MANTA 论文阅读笔记</a><time datetime="2026-09-17T06:13:48.000Z" title="发表于 2026-09-17 14:13:48">2026-09-17</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/17/About-Me/" title="关于我">关于我</a><time datetime="2026-09-17T05:40:33.000Z" title="发表于 2026-09-17 13:40:33">2026-09-17</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By Joker丶D</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.7.1.260810</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.7.1.260810"></script><script src="/js/main.js?v=5.7.1.260810"></script><div class="js-pjax"><script>(() => {
+  const changeScriptToMath = article => {
+    article.querySelectorAll('script[type^="math/tex"]').forEach(el => {
+      const display = /mode=display/.test(el.type)
+      const node = document.createElement(display ? 'div' : 'span')
+      node.textContent = display
+        ? `$$${el.textContent}$$`
+        : `$${el.textContent}$`
+      el.parentNode.replaceChild(node, el)
+    })
+  }
+
+  const loadMathjax = () => {
+    const article = document.getElementById('article-container')
+    if (!article || article.querySelector('.hbe-container')) return
+    changeScriptToMath(article)
+
+    if (!window.MathJax) {
+      window.MathJax = {
+        loader: {
+          load: [
+            // Four font extension packages (optional)
+            //- '[tex]/bbm',
+            //- '[tex]/bboldx',
+            //- '[tex]/dsfont',
+            '[tex]/mhchem',
+            'ui/lazy'
+          ],
+          paths: {
+            'mathjax-newcm': '[mathjax]/../@mathjax/mathjax-newcm-font',
+
+            //- // Four font extension packages (optional)
+            //- 'mathjax-bbm-extension': '[mathjax]/../@mathjax/mathjax-bbm-font-extension',
+            //- 'mathjax-bboldx-extension': '[mathjax]/../@mathjax/mathjax-bboldx-font-extension',
+            //- 'mathjax-dsfont-extension': '[mathjax]/../@mathjax/mathjax-dsfont-font-extension',
+            'mathjax-mhchem-extension': '[mathjax]/../@mathjax/mathjax-mhchem-font-extension'
+          }
+        },
+        output: {
+          font: 'mathjax-newcm',
+        },
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+          packages: {
+            '[+]': [
+              'mhchem'
+            ]
+          }
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          lazyMargin: '200px',
+          enableMenu: true,
+          menuOptions: {
+            settings: {
+              enrich: false  // Turn off Braille and voice narration text automatic generation
+            }
+          },
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@4.1.3/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.typesetClear()
+      MathJax.typesetPromise([ article ])
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  if (window.pjax) loadMathjax()
+  else if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', loadMathjax)
+  else loadMathjax()
+})()</script></div></div></body></html>
